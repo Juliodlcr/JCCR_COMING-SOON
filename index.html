@@ -18,7 +18,7 @@
       --ink: #1a1a18;
       --muted: #6b6b65;
       --line: #c8c4bb;
-      --bg: #f5f2ed;
+      --bg: #ffffff;
       --accent: #9b8b78;
     }
 
@@ -40,7 +40,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: opacity 0.8s ease, visibility 0.8s ease;
+      transition: opacity 0.9s ease, visibility 0.9s ease;
     }
 
     #loader.hidden {
@@ -55,42 +55,37 @@
       gap: 28px;
     }
 
-    /* Blueprint SVG */
-    #blueprint {
+    /* Logo SVG */
+    #logo-svg {
       width: 200px;
-      height: 160px;
+      height: 200px;
     }
 
-    #blueprint path,
-    #blueprint line,
-    #blueprint rect,
-    #blueprint circle,
-    #blueprint polyline {
+    #logo-svg path,
+    #logo-svg line {
       fill: none;
       stroke: var(--ink);
-      stroke-width: 1;
+      stroke-width: 13;
       stroke-linecap: round;
       stroke-linejoin: round;
     }
 
-    /* Each drawn element gets animated via stroke-dasharray/dashoffset */
     .draw {
       stroke-dasharray: var(--len);
       stroke-dashoffset: var(--len);
-      animation: draw-line var(--dur, 0.6s) var(--delay, 0s) cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      animation: draw-stroke var(--dur, 0.6s) var(--delay, 0s) cubic-bezier(0.4, 0, 0.2, 1) forwards;
     }
 
-    @keyframes draw-line {
+    @keyframes draw-stroke {
       to { stroke-dashoffset: 0; }
     }
 
     .loader-label {
-      font-family: 'Inter', sans-serif;
       font-size: 10px;
-      letter-spacing: 0.25em;
+      letter-spacing: 0.28em;
       text-transform: uppercase;
       color: var(--muted);
-      animation: fade-in 0.6s 2.4s ease both;
+      animation: fade-in 0.5s 4.2s ease both;
     }
 
     @keyframes fade-in {
@@ -112,7 +107,6 @@
       opacity: 1;
     }
 
-    /* Header */
     header {
       display: flex;
       align-items: baseline;
@@ -139,7 +133,6 @@
       color: var(--muted);
     }
 
-    /* Center */
     main {
       display: flex;
       flex-direction: column;
@@ -178,7 +171,6 @@
       margin-bottom: 44px;
     }
 
-    /* Email form */
     .form-label {
       font-size: 10px;
       letter-spacing: 0.2em;
@@ -238,7 +230,6 @@
       margin-top: 14px;
     }
 
-    /* Footer */
     footer {
       display: flex;
       align-items: flex-end;
@@ -276,7 +267,6 @@
       color: var(--ink);
     }
 
-    /* Decorative corner line */
     .corner-mark {
       position: fixed;
       bottom: 0;
@@ -284,7 +274,7 @@
       width: 180px;
       height: 180px;
       pointer-events: none;
-      opacity: 0.18;
+      opacity: 0.08;
     }
 
     .corner-mark line {
@@ -293,18 +283,9 @@
     }
 
     @media (max-width: 600px) {
-      #page {
-        padding: 32px 28px 28px;
-      }
-
+      #page { padding: 32px 28px 28px; }
       .tagline-header { display: none; }
-
-      footer {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
-      }
-
+      footer { flex-direction: column; align-items: flex-start; gap: 16px; }
       .footer-contact { text-align: left; }
     }
   </style>
@@ -314,37 +295,67 @@
   <!-- LOADER -->
   <div id="loader">
     <div class="loader-inner">
-      <!-- Architectural floor-plan sketch -->
-      <svg id="blueprint" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">
-        <!-- Outer perimeter -->
-        <polyline class="draw" style="--len:520px;--dur:1s;--delay:0s"
-          points="20,140 20,20 180,20 180,140 20,140" />
-        <!-- Interior wall horizontal -->
-        <line class="draw" style="--len:80px;--dur:0.5s;--delay:1s"
-          x1="20" y1="80" x2="100" y2="80" />
-        <!-- Interior wall vertical -->
-        <line class="draw" style="--len:60px;--dur:0.4s;--delay:1.5s"
-          x1="100" y1="20" x2="100" y2="80" />
-        <!-- Door arc (quarter circle) -->
-        <path class="draw" style="--len:50px;--dur:0.35s;--delay:1.9s"
-          d="M100,80 A30,30 0 0,1 130,80" />
-        <!-- Door swing line -->
-        <line class="draw" style="--len:32px;--dur:0.25s;--delay:2.25s"
-          x1="100" y1="80" x2="100" y2="50" />
-        <!-- Window tick marks top -->
-        <line class="draw" style="--len:6px;--dur:0.15s;--delay:2.5s"
-          x1="140" y1="20" x2="140" y2="14" />
-        <line class="draw" style="--len:6px;--dur:0.15s;--delay:2.6s"
-          x1="155" y1="20" x2="155" y2="14" />
-        <!-- Measurement lines -->
-        <line class="draw" style="--len:40px;--dur:0.3s;--delay:2.7s"
-          x1="20" y1="150" x2="60" y2="150" stroke-dasharray="2 4" />
-        <line class="draw" style="--len:3px;--dur:0.1s;--delay:3s"
-          x1="20" y1="147" x2="20" y2="153" />
-        <line class="draw" style="--len:3px;--dur:0.1s;--delay:3.1s"
-          x1="60" y1="147" x2="60" y2="153" />
+
+      <!--
+        Logo SVG — 4 letras en cuadrantes + diagonal central.
+        ViewBox 400×400, trazos dibujados secuencialmente.
+
+        Secuencia de animación:
+          J cap          0.00s  dur 0.25s
+          J stem+curve   0.25s  dur 0.70s
+          C superior     0.95s  dur 0.85s
+          / diagonal     1.80s  dur 0.30s
+          C inferior     2.10s  dur 0.85s
+          R stem         2.95s  dur 0.45s
+          R bowl         3.40s  dur 0.55s
+          R leg          3.95s  dur 0.35s
+          Total ≈ 4.30s
+      -->
+      <svg id="logo-svg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- ── J (cuadrante superior izquierdo) ── -->
+        <!-- Tope horizontal del J -->
+        <line class="draw"
+          style="--len:52px; --dur:0.25s; --delay:0s"
+          x1="72" y1="48" x2="124" y2="48" />
+        <!-- Tallo vertical + curva inferior -->
+        <path class="draw"
+          style="--len:230px; --dur:0.70s; --delay:0.25s"
+          d="M 98,48 L 98,158 Q 98,188 82,195 Q 60,202 52,185" />
+
+        <!-- ── C superior (cuadrante superior derecho) ── -->
+        <!-- Arco abierto a la derecha, sentido horario desde arriba -->
+        <path class="draw"
+          style="--len:430px; --dur:0.85s; --delay:0.95s"
+          d="M 370,52 A 88,85 0 1 0 370,152" />
+
+        <!-- ── / diagonal central ── -->
+        <line class="draw"
+          style="--len:110px; --dur:0.30s; --delay:1.80s"
+          x1="185" y1="260" x2="240" y2="152" />
+
+        <!-- ── C inferior (cuadrante inferior izquierdo) ── -->
+        <path class="draw"
+          style="--len:410px; --dur:0.85s; --delay:2.10s"
+          d="M 172,258 A 84,82 0 1 0 172,352" />
+
+        <!-- ── R (cuadrante inferior derecho) ── -->
+        <!-- Tallo vertical -->
+        <line class="draw"
+          style="--len:155px; --dur:0.45s; --delay:2.95s"
+          x1="232" y1="240" x2="232" y2="390" />
+        <!-- Bowl / joroba superior -->
+        <path class="draw"
+          style="--len:195px; --dur:0.55s; --delay:3.40s"
+          d="M 232,240 Q 338,240 338,285 Q 338,330 232,330" />
+        <!-- Pata diagonal -->
+        <line class="draw"
+          style="--len:135px; --dur:0.35s; --delay:3.95s"
+          x1="286" y1="330" x2="375" y2="390" />
+
       </svg>
-      <span class="loader-label">Cargando</span>
+
+      <span class="loader-label">JCCR Studio</span>
     </div>
   </div>
 
@@ -381,7 +392,7 @@
     </footer>
   </div>
 
-  <!-- Decorative corner grid mark -->
+  <!-- Marca decorativa en esquina -->
   <svg class="corner-mark" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
     <line x1="0" y1="180" x2="180" y2="0" />
     <line x1="40" y1="180" x2="180" y2="40" />
@@ -390,32 +401,23 @@
   </svg>
 
   <script>
-    // After the blueprint finishes drawing, fade out the loader and show the page
-    const totalDuration = 3200; // ms — matches last animation end
+    // La última animación termina ≈ 4.30s + 0.2s de margen
+    const totalDuration = 4600;
 
     setTimeout(() => {
-      const loader = document.getElementById('loader');
-      const page   = document.getElementById('page');
-      loader.classList.add('hidden');
-      page.classList.add('visible');
+      document.getElementById('loader').classList.add('hidden');
+      document.getElementById('page').classList.add('visible');
     }, totalDuration);
 
     function handleSubmit() {
       const input   = document.getElementById('email-input');
       const success = document.getElementById('form-success');
       const email   = input.value.trim();
-
-      if (!email || !email.includes('@')) {
-        input.focus();
-        return;
-      }
-
-      // Here you'd wire up a real backend / service like Mailchimp, Formspree, etc.
+      if (!email || !email.includes('@')) { input.focus(); return; }
       success.style.display = 'block';
       input.value = '';
     }
 
-    // Allow Enter key in email field
     document.getElementById('email-input').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') handleSubmit();
     });
