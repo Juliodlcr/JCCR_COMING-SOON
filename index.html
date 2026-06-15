@@ -18,7 +18,6 @@
       font-weight: 300;
     }
 
-    /* Canvas de fondo */
     #bg-canvas {
       position: fixed;
       inset: 0;
@@ -26,7 +25,6 @@
       pointer-events: none;
     }
 
-    /* ── LAYOUT ── */
     .page {
       position: relative;
       z-index: 1;
@@ -38,7 +36,6 @@
       padding: 48px 24px 64px;
     }
 
-    /* ── LOGO ── */
     .logo-wrap {
       width: 200px;
       height: 200px;
@@ -51,7 +48,6 @@
       object-fit: contain;
     }
 
-    /* ── LOADING BAR ── */
     .bar-wrap {
       width: 200px;
       height: 1.5px;
@@ -73,7 +69,6 @@
       100% { transform: translateX(200%); }
     }
 
-    /* ── EMAIL SECTION ── */
     .email-section {
       display: flex;
       flex-direction: column;
@@ -133,7 +128,6 @@
       color: #9b8b78;
     }
 
-    /* ── CORNER MARKS ── */
     .corner-mark {
       position: fixed;
       width: 22px;
@@ -142,7 +136,6 @@
       opacity: 0;
       z-index: 2;
     }
-
     .corner-mark svg { width: 100%; height: 100%; }
     .corner-mark path {
       fill: none;
@@ -155,22 +148,17 @@
 </head>
 <body>
 
-  <!-- Fondo canvas -->
   <canvas id="bg-canvas"></canvas>
 
   <div class="page">
-
-    <!-- LOGO -->
     <div class="logo-wrap">
       <img src="Logo_JCCR (1).jpg" alt="JCCR Studio" />
     </div>
 
-    <!-- BARRA -->
     <div class="bar-wrap">
       <div class="bar-fill"></div>
     </div>
 
-    <!-- EMAIL -->
     <div class="email-section">
       <p class="email-label">Avísame cuando estemos listos</p>
       <div class="input-row">
@@ -179,81 +167,68 @@
       </div>
       <p class="form-success" id="form-success">¡Listo! Te avisamos pronto.</p>
     </div>
-
   </div>
 
   <script>
-  /* ══════════════════════════════════════════════════════
-     CANVAS — "De lo disperso al orden"
-     Ciclo de 22s que visualiza el proceso creativo
-     arquitectónico en 4 fases:
-       1. Puntos dispersos (ideas en el sitio)
-       2. Migración a retícula (el orden emerge)
-       3. Plano que se dibuja (la propuesta)
-       4. Disolución al blanco (el proyecto regresa a potencia)
-  ══════════════════════════════════════════════════════ */
+  /* ══════════════════════════════════════════════════
+     CANVAS — Puntos y malla en toda la pantalla
+     Ciclo de 18s:
+       0.00-0.22  puntos aparecen dispersos
+       0.18-0.46  migran a la retícula
+       0.42-0.66  malla de conexiones emerge
+       0.64-0.78  pausa con todo visible
+       0.76-1.00  disolución al blanco
+     La zona central (logo + barra + correo)
+     queda limpia con clip evenodd.
+  ══════════════════════════════════════════════════ */
   (function () {
     const canvas = document.getElementById('bg-canvas');
     const ctx    = canvas.getContext('2d');
 
-    const COLS = 7, ROWS = 5, N = COLS * ROWS;
-    const CYCLE = 22; // segundos por loop
+    const CYCLE = 18;    // segundos por loop
+    const UNIT  = 72;    // tamaño de celda base en px
 
-    let W, H, cx, cy, unit;
-    let gridPos  = [];   // posiciones en la retícula
-    let randPos  = [];   // posiciones dispersas iniciales
-    let order    = [];   // orden aleatorio de aparición
+    let W, H, cx, cy;
+    let COLS, ROWS, N;
+    let gridPos = [], randPos = [], order = [];
 
-    // Paredes del plano (en coordenadas de retícula [c,r])
-    // Genera una planta de dos habitaciones con corredor
-    const PLAN_WALLS = [
-      [0,0, 6,0],   // muro superior
-      [6,0, 6,4],   // muro derecho
-      [6,4, 0,4],   // muro inferior
-      [0,0, 0,2],   // muro izquierdo - tramo superior
-      [0,3, 0,4],   // muro izquierdo - tramo inferior (hueco = puerta)
-      [2,0, 2,4],   // muro interior vertical
-      [2,2, 6,2],   // muro interior horizontal
-    ];
-
-    // Puntos de columna estructural (nodos destacados)
-    const COL_PTS = [
-      [0,0],[2,0],[6,0],
-      [0,4],[2,4],[6,4],
-      [2,2],[6,2],
-    ];
+    // Zona segura (sin dibujo) — cubre logo + barra + email
+    const SAFE_W = 360;
+    const SAFE_H = 520;
 
     function resize() {
       W = canvas.width  = window.innerWidth;
       H = canvas.height = window.innerHeight;
       cx = W / 2;
       cy = H / 2;
-      unit = Math.min(W, H) * 0.075;
       buildGrid();
+      initRandom();
     }
 
     function buildGrid() {
+      // Número de columnas/filas que cubren la pantalla
+      COLS = Math.ceil(W / UNIT) + 2;
+      ROWS = Math.ceil(H / UNIT) + 2;
+      N    = COLS * ROWS;
+
+      // Centrado en pantalla
+      const ox = cx - Math.floor(COLS / 2) * UNIT;
+      const oy = cy - Math.floor(ROWS / 2) * UNIT;
+
       gridPos = [];
       for (let r = 0; r < ROWS; r++)
         for (let c = 0; c < COLS; c++)
-          gridPos.push({
-            x: cx + (c - (COLS - 1) / 2) * unit,
-            y: cy + (r - (ROWS - 1) / 2) * unit
-          });
+          gridPos.push({ x: ox + c * UNIT, y: oy + r * UNIT });
     }
 
     function initRandom() {
-      // Posiciones dispersas, alejadas del centro
-      randPos = [];
-      for (let i = 0; i < N; i++) {
-        const angle  = Math.random() * Math.PI * 2;
-        const radius = Math.min(W, H) * (0.25 + Math.random() * 0.30);
-        randPos.push({
-          x: cx + Math.cos(angle) * radius * (W / H > 1 ? W / H : 1),
-          y: cy + Math.sin(angle) * radius
-        });
-      }
-      // Orden de aparición aleatorio
+      // Posiciones iniciales dispersas por toda la pantalla
+      randPos = gridPos.map(() => ({
+        x: W * 0.05 + Math.random() * W * 0.90,
+        y: H * 0.05 + Math.random() * H * 0.90
+      }));
+
+      // Orden aleatorio de aparición de puntos
       order = Array.from({ length: N }, (_, i) => i);
       for (let i = N - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -262,12 +237,9 @@
     }
 
     resize();
-    initRandom();
-    window.addEventListener('resize', () => { resize(); initRandom(); });
+    window.addEventListener('resize', resize);
 
-    // ── Easing ──
     const eio = t => t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-    const eo3 = t => 1 - Math.pow(1 - t, 3);
 
     function phP(tc, s, e) {
       if (tc <= s) return 0;
@@ -275,35 +247,20 @@
       return (tc - s) / (e - s);
     }
 
-    // Posición interpolada entre disperso y retícula
-    function pos(i, lerpT) {
-      const g = gridPos[i], r = randPos[i];
-      return {
-        x: r.x + (g.x - r.x) * lerpT,
-        y: r.y + (g.y - r.y) * lerpT
-      };
-    }
-
-    // Posición de retícula por coordenada
-    function gp(c, r) { return gridPos[r * COLS + c]; }
-
-    // Dibuja línea parcial
-    function drawSeg(x1, y1, x2, y2, p, alpha) {
-      if (p <= 0 || alpha <= 0) return;
-      p = Math.min(p, 1);
-      ctx.globalAlpha = alpha;
+    // Aplica clip que EXCLUYE el rectángulo central
+    function applyHoleMask() {
+      const sx = cx - SAFE_W / 2;
+      const sy = cy - SAFE_H / 2;
       ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x1 + (x2 - x1) * p, y1 + (y2 - y1) * p);
-      ctx.stroke();
-    }
-
-    // Calcula longitud total de las paredes del plano (en px)
-    function totalPlanLength() {
-      return PLAN_WALLS.reduce((sum, [c1, r1, c2, r2]) => {
-        const a = gp(c1, r1), b = gp(c2, r2);
-        return sum + Math.hypot(b.x - a.x, b.y - a.y);
-      }, 0);
+      // Rectángulo exterior (todo el canvas) — sentido horario
+      ctx.rect(0, 0, W, H);
+      // Rectángulo interior (zona central) — sentido antihorario = agujero
+      ctx.moveTo(sx, sy);
+      ctx.lineTo(sx, sy + SAFE_H);
+      ctx.lineTo(sx + SAFE_W, sy + SAFE_H);
+      ctx.lineTo(sx + SAFE_W, sy);
+      ctx.closePath();
+      ctx.clip('evenodd');
     }
 
     let startTime = null;
@@ -313,127 +270,98 @@
       if (!startTime) startTime = ts;
 
       const t  = (ts - startTime) / 1000;
-      const tc = (t % CYCLE) / CYCLE; // 0..1
+      const tc = (t % CYCLE) / CYCLE;
 
       ctx.clearRect(0, 0, W, H);
+
+      const pDots    = eio(phP(tc, 0.00, 0.22));
+      const pMigrate = eio(phP(tc, 0.18, 0.46));
+      const pMesh    = eio(phP(tc, 0.42, 0.66));
+      const pFade    = eio(phP(tc, 0.76, 1.00));
+      const gA       = 1 - pFade;
+
+      if (gA <= 0.01) return;
+
+      ctx.save();
+      applyHoleMask();
+
       ctx.strokeStyle = '#1a1a18';
       ctx.fillStyle   = '#1a1a18';
 
-      /* Fases del ciclo (en fracción del ciclo total)
-         0.00 - 0.22  Puntos aparecen dispersos
-         0.18 - 0.42  Puntos migran a la retícula
-         0.38 - 0.58  Malla de retícula emerge
-         0.52 - 0.65  Malla desvanece
-         0.55 - 0.76  Plano se traza
-         0.78 - 1.00  Todo desvanece al blanco
-      */
-      const pDots    = eio(phP(tc, 0.00, 0.22));
-      const pMigrate = eio(phP(tc, 0.18, 0.42));
-      const pMesh    = eio(phP(tc, 0.38, 0.58));
-      const pMeshOut = eio(phP(tc, 0.52, 0.65));
-      const pPlan    = eio(phP(tc, 0.55, 0.76));
-      const pFade    = eio(phP(tc, 0.78, 1.00));
-
-      const gA = 1 - pFade; // alpha global
-      if (gA <= 0.01) return;
-
-      const meshA = pMesh * (1 - pMeshOut);
       const nDots = Math.round(pDots * N);
 
-      // ── 1. PUNTOS ──
+      // ── Puntos ──
       for (let i = 0; i < nDots; i++) {
-        const { x, y } = pos(order[i], pMigrate);
-        ctx.globalAlpha = gA * 0.45;
+        const idx = order[i];
+        const g   = gridPos[idx];
+        const r   = randPos[idx];
+        const x   = r.x + (g.x - r.x) * pMigrate;
+        const y   = r.y + (g.y - r.y) * pMigrate;
+        ctx.globalAlpha = gA * 0.40;
         ctx.beginPath();
-        ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+        ctx.arc(x, y, 1.4, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      // ── 2. MALLA ──
-      if (meshA > 0.01) {
+      // ── Malla ──
+      if (pMesh > 0.01) {
         ctx.lineWidth = 0.5;
+        // Dibujamos solo los segmentos que ya han "aparecido"
+        const totalSegs = (COLS - 1) * ROWS + COLS * (ROWS - 1);
+        const nSegs     = Math.round(pMesh * totalSegs);
+        let drawn = 0;
+
+        outer:
         for (let r = 0; r < ROWS; r++) {
           for (let c = 0; c < COLS; c++) {
-            const p0 = gp(c, r);
+            const i0 = r * COLS + c;
+            // Segmento horizontal
             if (c < COLS - 1) {
-              const p1 = gp(c + 1, r);
-              drawSeg(p0.x, p0.y, p1.x, p1.y, 1, gA * meshA * 0.22);
+              if (drawn++ >= nSegs) break outer;
+              const a = gridPos[i0], b = gridPos[i0 + 1];
+              ctx.globalAlpha = gA * pMesh * 0.18;
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.stroke();
             }
+            // Segmento vertical
             if (r < ROWS - 1) {
-              const p1 = gp(c, r + 1);
-              drawSeg(p0.x, p0.y, p1.x, p1.y, 1, gA * meshA * 0.22);
+              if (drawn++ >= nSegs) break outer;
+              const a = gridPos[i0], b = gridPos[i0 + COLS];
+              ctx.globalAlpha = gA * pMesh * 0.18;
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.stroke();
             }
           }
         }
       }
 
-      // ── 3. PLANO ──
-      if (pPlan > 0.01) {
-        ctx.lineWidth = 1.1;
-        const planA = gA * 0.72;
-
-        // Traza las paredes progresivamente (longitud acumulada)
-        const totalLen = totalPlanLength();
-        let drawn = pPlan * totalLen;
-
-        for (const [c1, r1, c2, r2] of PLAN_WALLS) {
-          if (drawn <= 0) break;
-          const a = gp(c1, r1), b = gp(c2, r2);
-          const segLen = Math.hypot(b.x - a.x, b.y - a.y);
-          const segP   = Math.min(drawn / segLen, 1);
-          drawn -= segLen;
-          drawSeg(a.x, a.y, b.x, b.y, segP, planA);
-        }
-
-        // Arco de puerta (aparece cuando el plano está al 85%)
-        if (pPlan > 0.85) {
-          const arcA  = eo3((pPlan - 0.85) / 0.15);
-          const door  = gp(0, 3); // base de la puerta
-          const endA  = -Math.PI / 2 + (Math.PI / 2) * arcA;
-          ctx.globalAlpha = planA * arcA;
-          ctx.lineWidth = 1.1;
-          ctx.beginPath();
-          ctx.arc(door.x, door.y, unit, -Math.PI / 2, endA);
-          ctx.stroke();
-        }
-
-        // Puntos de columna estructural
-        if (pPlan > 0.6) {
-          const colA = eo3((pPlan - 0.6) / 0.4);
-          for (const [c, r] of COL_PTS) {
-            const p = gp(c, r);
-            ctx.globalAlpha = planA * colA;
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, 2.8, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        }
-      }
+      ctx.restore();
     }
 
     requestAnimationFrame(frame);
   })();
 
 
-  /* ══════════════════════════════════════════════════════
-     CORNER MARKS — marcas en "L" que aparecen y
-     desaparecen aleatoriamente en el perímetro
-  ══════════════════════════════════════════════════════ */
+  /* ══════════════════════════════════════
+     CORNER MARKS
+  ══════════════════════════════════════ */
   (function () {
-    const PATH  = 'M 20,2 L 2,2 L 2,20';
-    const PAD   = 18;
-    const COUNT = 14;
+    const PATH = 'M 20,2 L 2,2 L 2,20';
+    const PAD  = 18, COUNT = 14;
 
     function buildPositions() {
-      const p   = PAD + 'px';
-      const all = [];
+      const p = PAD + 'px', all = [];
       [15, 30, 45, 55, 70, 85].forEach(pct => {
         const s = pct + '%';
         all.push(
-          { left: s, top: p,    rot: pct < 50 ? 0   : 90  },
-          { left: s, bottom: p, rot: pct < 50 ? 270 : 180 },
-          { left: p, top: s,    rot: pct < 50 ? 0   : 270 },
-          { right: p, top: s,   rot: pct < 50 ? 90  : 180 }
+          { left: s,    top: p,    rot: pct < 50 ? 0   : 90  },
+          { left: s,    bottom: p, rot: pct < 50 ? 270 : 180 },
+          { left: p,    top: s,    rot: pct < 50 ? 0   : 270 },
+          { right: p,   top: s,    rot: pct < 50 ? 90  : 180 }
         );
       });
       for (let i = all.length - 1; i > 0; i--) {
