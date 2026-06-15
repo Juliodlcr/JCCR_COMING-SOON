@@ -18,21 +18,30 @@
       font-weight: 300;
     }
 
+    /* Canvas de fondo */
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
     /* ── LAYOUT ── */
     .page {
+      position: relative;
+      z-index: 1;
       min-height: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 48px 24px 64px;
-      gap: 0;
     }
 
     /* ── LOGO ── */
     .logo-wrap {
-      width: 220px;
-      height: 220px;
+      width: 200px;
+      height: 200px;
       margin-bottom: 36px;
     }
 
@@ -44,24 +53,18 @@
 
     /* ── LOADING BAR ── */
     .bar-wrap {
-      width: 220px;
+      width: 200px;
       height: 1.5px;
       background: #e8e5e0;
       position: relative;
       overflow: hidden;
-      margin-bottom: 56px;
+      margin-bottom: 52px;
     }
 
     .bar-fill {
       position: absolute;
       inset: 0;
-      background: linear-gradient(
-        90deg,
-        transparent 0%,
-        #1a1a18 40%,
-        #1a1a18 60%,
-        transparent 100%
-      );
+      background: linear-gradient(90deg, transparent 0%, #1a1a18 40%, #1a1a18 60%, transparent 100%);
       animation: sweep 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     }
 
@@ -75,7 +78,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
+      gap: 14px;
       text-align: center;
     }
 
@@ -107,9 +110,7 @@
       text-align: center;
     }
 
-    .input-row input::placeholder {
-      color: #c8c4bb;
-    }
+    .input-row input::placeholder { color: #c8c4bb; }
 
     .input-row button {
       background: transparent;
@@ -117,16 +118,12 @@
       cursor: pointer;
       padding: 10px 0 10px 12px;
       color: #6b6b65;
-      font-family: 'Inter', sans-serif;
       font-size: 16px;
       line-height: 1;
       transition: color 0.2s, transform 0.2s;
     }
 
-    .input-row button:hover {
-      color: #1a1a18;
-      transform: translateX(2px);
-    }
+    .input-row button:hover { color: #1a1a18; transform: translateX(2px); }
 
     .form-success {
       display: none;
@@ -143,14 +140,10 @@
       height: 22px;
       pointer-events: none;
       opacity: 0;
-      transition: opacity 0.6s ease;
+      z-index: 2;
     }
 
-    .corner-mark svg {
-      width: 100%;
-      height: 100%;
-    }
-
+    .corner-mark svg { width: 100%; height: 100%; }
     .corner-mark path {
       fill: none;
       stroke: #1a1a18;
@@ -161,6 +154,10 @@
   </style>
 </head>
 <body>
+
+  <!-- Fondo canvas -->
+  <canvas id="bg-canvas"></canvas>
+
   <div class="page">
 
     <!-- LOGO -->
@@ -168,7 +165,7 @@
       <img src="Logo_JCCR (1).jpg" alt="JCCR Studio" />
     </div>
 
-    <!-- BARRA DE CARGA -->
+    <!-- BARRA -->
     <div class="bar-wrap">
       <div class="bar-fill"></div>
     </div>
@@ -186,105 +183,313 @@
   </div>
 
   <script>
-    /* ── CORNER MARKS ── */
-    (function () {
-      // L-shape path: corner at (2,2), arms go right and down — rotated per position
-      const PATH = 'M 20,2 L 2,2 L 2,20';
-      const EDGE_PAD = 18; // px from each edge
-      const COUNT    = 14; // total marks in the pool
+  /* ══════════════════════════════════════════════════════
+     CANVAS — "De lo disperso al orden"
+     Ciclo de 22s que visualiza el proceso creativo
+     arquitectónico en 4 fases:
+       1. Puntos dispersos (ideas en el sitio)
+       2. Migración a retícula (el orden emerge)
+       3. Plano que se dibuja (la propuesta)
+       4. Disolución al blanco (el proyecto regresa a potencia)
+  ══════════════════════════════════════════════════════ */
+  (function () {
+    const canvas = document.getElementById('bg-canvas');
+    const ctx    = canvas.getContext('2d');
 
-      // Each entry: [cssLeft, cssTop, rotateDeg]
-      // Rotation makes the L open inward:
-      //   0°   → top-left style  (arms go right + down)
-      //   90°  → top-right style (arms go left  + down)
-      //   180° → bottom-right    (arms go left  + up)
-      //   270° → bottom-left     (arms go right + up)
-      function buildPositions() {
-        const p = EDGE_PAD + 'px';
-        const positions = [];
-        const steps = [15, 30, 45, 55, 70, 85]; // % along each edge
+    const COLS = 7, ROWS = 5, N = COLS * ROWS;
+    const CYCLE = 22; // segundos por loop
 
-        steps.forEach(pct => {
-          const s = pct + '%';
-          positions.push(
-            // top edge
-            { left: s,    top: p,    rot: pct < 50 ? 0   : 90  },
-            // bottom edge
-            { left: s,    bottom: p, rot: pct < 50 ? 270 : 180 },
-            // left edge
-            { left: p,    top: s,    rot: pct < 50 ? 0   : 270 },
-            // right edge
-            { right: p,   top: s,    rot: pct < 50 ? 90  : 180 }
-          );
-        });
+    let W, H, cx, cy, unit;
+    let gridPos  = [];   // posiciones en la retícula
+    let randPos  = [];   // posiciones dispersas iniciales
+    let order    = [];   // orden aleatorio de aparición
 
-        // Shuffle and pick COUNT
-        for (let i = positions.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [positions[i], positions[j]] = [positions[j], positions[i]];
-        }
-        return positions.slice(0, COUNT);
-      }
+    // Paredes del plano (en coordenadas de retícula [c,r])
+    // Genera una planta de dos habitaciones con corredor
+    const PLAN_WALLS = [
+      [0,0, 6,0],   // muro superior
+      [6,0, 6,4],   // muro derecho
+      [6,4, 0,4],   // muro inferior
+      [0,0, 0,2],   // muro izquierdo - tramo superior
+      [0,3, 0,4],   // muro izquierdo - tramo inferior (hueco = puerta)
+      [2,0, 2,4],   // muro interior vertical
+      [2,2, 6,2],   // muro interior horizontal
+    ];
 
-      function createMark(pos) {
-        const el = document.createElement('div');
-        el.className = 'corner-mark';
+    // Puntos de columna estructural (nodos destacados)
+    const COL_PTS = [
+      [0,0],[2,0],[6,0],
+      [0,4],[2,4],[6,4],
+      [2,2],[6,2],
+    ];
 
-        if (pos.left)   el.style.left   = pos.left;
-        if (pos.right)  el.style.right  = pos.right;
-        if (pos.top)    el.style.top    = pos.top;
-        if (pos.bottom) el.style.bottom = pos.bottom;
-        el.style.transform = `rotate(${pos.rot}deg)`;
-
-        el.innerHTML = `<svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
-          <path d="${PATH}"/>
-        </svg>`;
-
-        document.body.appendChild(el);
-        return el;
-      }
-
-      function scheduleMark(el) {
-        const delay   = Math.random() * 5000;          // wait before appearing
-        const visible = 800  + Math.random() * 2400;   // how long it stays
-        const fade    = 400  + Math.random() * 600;    // fade transition time
-
-        setTimeout(() => {
-          el.style.transitionDuration = '0.5s';
-          el.style.opacity = '0.55';
-
-          setTimeout(() => {
-            el.style.transitionDuration = fade + 'ms';
-            el.style.opacity = '0';
-
-            // Schedule next cycle with a random pause after disappearing
-            const pause = 1500 + Math.random() * 4000;
-            setTimeout(() => scheduleMark(el), pause + fade);
-          }, visible);
-
-        }, delay);
-      }
-
-      // Init
-      const positions = buildPositions();
-      positions.forEach(pos => {
-        const el = createMark(pos);
-        scheduleMark(el);
-      });
-    })();
-
-    /* ── EMAIL ── */
-    function handleSubmit() {
-      const input   = document.getElementById('email-input');
-      const success = document.getElementById('form-success');
-      const email   = input.value.trim();
-      if (!email || !email.includes('@')) { input.focus(); return; }
-      success.style.display = 'block';
-      input.value = '';
+    function resize() {
+      W = canvas.width  = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+      cx = W / 2;
+      cy = H / 2;
+      unit = Math.min(W, H) * 0.075;
+      buildGrid();
     }
-    document.getElementById('email-input').addEventListener('keydown', e => {
-      if (e.key === 'Enter') handleSubmit();
-    });
+
+    function buildGrid() {
+      gridPos = [];
+      for (let r = 0; r < ROWS; r++)
+        for (let c = 0; c < COLS; c++)
+          gridPos.push({
+            x: cx + (c - (COLS - 1) / 2) * unit,
+            y: cy + (r - (ROWS - 1) / 2) * unit
+          });
+    }
+
+    function initRandom() {
+      // Posiciones dispersas, alejadas del centro
+      randPos = [];
+      for (let i = 0; i < N; i++) {
+        const angle  = Math.random() * Math.PI * 2;
+        const radius = Math.min(W, H) * (0.25 + Math.random() * 0.30);
+        randPos.push({
+          x: cx + Math.cos(angle) * radius * (W / H > 1 ? W / H : 1),
+          y: cy + Math.sin(angle) * radius
+        });
+      }
+      // Orden de aparición aleatorio
+      order = Array.from({ length: N }, (_, i) => i);
+      for (let i = N - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+      }
+    }
+
+    resize();
+    initRandom();
+    window.addEventListener('resize', () => { resize(); initRandom(); });
+
+    // ── Easing ──
+    const eio = t => t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    const eo3 = t => 1 - Math.pow(1 - t, 3);
+
+    function phP(tc, s, e) {
+      if (tc <= s) return 0;
+      if (tc >= e) return 1;
+      return (tc - s) / (e - s);
+    }
+
+    // Posición interpolada entre disperso y retícula
+    function pos(i, lerpT) {
+      const g = gridPos[i], r = randPos[i];
+      return {
+        x: r.x + (g.x - r.x) * lerpT,
+        y: r.y + (g.y - r.y) * lerpT
+      };
+    }
+
+    // Posición de retícula por coordenada
+    function gp(c, r) { return gridPos[r * COLS + c]; }
+
+    // Dibuja línea parcial
+    function drawSeg(x1, y1, x2, y2, p, alpha) {
+      if (p <= 0 || alpha <= 0) return;
+      p = Math.min(p, 1);
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x1 + (x2 - x1) * p, y1 + (y2 - y1) * p);
+      ctx.stroke();
+    }
+
+    // Calcula longitud total de las paredes del plano (en px)
+    function totalPlanLength() {
+      return PLAN_WALLS.reduce((sum, [c1, r1, c2, r2]) => {
+        const a = gp(c1, r1), b = gp(c2, r2);
+        return sum + Math.hypot(b.x - a.x, b.y - a.y);
+      }, 0);
+    }
+
+    let startTime = null;
+
+    function frame(ts) {
+      requestAnimationFrame(frame);
+      if (!startTime) startTime = ts;
+
+      const t  = (ts - startTime) / 1000;
+      const tc = (t % CYCLE) / CYCLE; // 0..1
+
+      ctx.clearRect(0, 0, W, H);
+      ctx.strokeStyle = '#1a1a18';
+      ctx.fillStyle   = '#1a1a18';
+
+      /* Fases del ciclo (en fracción del ciclo total)
+         0.00 - 0.22  Puntos aparecen dispersos
+         0.18 - 0.42  Puntos migran a la retícula
+         0.38 - 0.58  Malla de retícula emerge
+         0.52 - 0.65  Malla desvanece
+         0.55 - 0.76  Plano se traza
+         0.78 - 1.00  Todo desvanece al blanco
+      */
+      const pDots    = eio(phP(tc, 0.00, 0.22));
+      const pMigrate = eio(phP(tc, 0.18, 0.42));
+      const pMesh    = eio(phP(tc, 0.38, 0.58));
+      const pMeshOut = eio(phP(tc, 0.52, 0.65));
+      const pPlan    = eio(phP(tc, 0.55, 0.76));
+      const pFade    = eio(phP(tc, 0.78, 1.00));
+
+      const gA = 1 - pFade; // alpha global
+      if (gA <= 0.01) return;
+
+      const meshA = pMesh * (1 - pMeshOut);
+      const nDots = Math.round(pDots * N);
+
+      // ── 1. PUNTOS ──
+      for (let i = 0; i < nDots; i++) {
+        const { x, y } = pos(order[i], pMigrate);
+        ctx.globalAlpha = gA * 0.45;
+        ctx.beginPath();
+        ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // ── 2. MALLA ──
+      if (meshA > 0.01) {
+        ctx.lineWidth = 0.5;
+        for (let r = 0; r < ROWS; r++) {
+          for (let c = 0; c < COLS; c++) {
+            const p0 = gp(c, r);
+            if (c < COLS - 1) {
+              const p1 = gp(c + 1, r);
+              drawSeg(p0.x, p0.y, p1.x, p1.y, 1, gA * meshA * 0.22);
+            }
+            if (r < ROWS - 1) {
+              const p1 = gp(c, r + 1);
+              drawSeg(p0.x, p0.y, p1.x, p1.y, 1, gA * meshA * 0.22);
+            }
+          }
+        }
+      }
+
+      // ── 3. PLANO ──
+      if (pPlan > 0.01) {
+        ctx.lineWidth = 1.1;
+        const planA = gA * 0.72;
+
+        // Traza las paredes progresivamente (longitud acumulada)
+        const totalLen = totalPlanLength();
+        let drawn = pPlan * totalLen;
+
+        for (const [c1, r1, c2, r2] of PLAN_WALLS) {
+          if (drawn <= 0) break;
+          const a = gp(c1, r1), b = gp(c2, r2);
+          const segLen = Math.hypot(b.x - a.x, b.y - a.y);
+          const segP   = Math.min(drawn / segLen, 1);
+          drawn -= segLen;
+          drawSeg(a.x, a.y, b.x, b.y, segP, planA);
+        }
+
+        // Arco de puerta (aparece cuando el plano está al 85%)
+        if (pPlan > 0.85) {
+          const arcA  = eo3((pPlan - 0.85) / 0.15);
+          const door  = gp(0, 3); // base de la puerta
+          const endA  = -Math.PI / 2 + (Math.PI / 2) * arcA;
+          ctx.globalAlpha = planA * arcA;
+          ctx.lineWidth = 1.1;
+          ctx.beginPath();
+          ctx.arc(door.x, door.y, unit, -Math.PI / 2, endA);
+          ctx.stroke();
+        }
+
+        // Puntos de columna estructural
+        if (pPlan > 0.6) {
+          const colA = eo3((pPlan - 0.6) / 0.4);
+          for (const [c, r] of COL_PTS) {
+            const p = gp(c, r);
+            ctx.globalAlpha = planA * colA;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 2.8, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+    }
+
+    requestAnimationFrame(frame);
+  })();
+
+
+  /* ══════════════════════════════════════════════════════
+     CORNER MARKS — marcas en "L" que aparecen y
+     desaparecen aleatoriamente en el perímetro
+  ══════════════════════════════════════════════════════ */
+  (function () {
+    const PATH  = 'M 20,2 L 2,2 L 2,20';
+    const PAD   = 18;
+    const COUNT = 14;
+
+    function buildPositions() {
+      const p   = PAD + 'px';
+      const all = [];
+      [15, 30, 45, 55, 70, 85].forEach(pct => {
+        const s = pct + '%';
+        all.push(
+          { left: s, top: p,    rot: pct < 50 ? 0   : 90  },
+          { left: s, bottom: p, rot: pct < 50 ? 270 : 180 },
+          { left: p, top: s,    rot: pct < 50 ? 0   : 270 },
+          { right: p, top: s,   rot: pct < 50 ? 90  : 180 }
+        );
+      });
+      for (let i = all.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [all[i], all[j]] = [all[j], all[i]];
+      }
+      return all.slice(0, COUNT);
+    }
+
+    function createMark(pos) {
+      const el = document.createElement('div');
+      el.className = 'corner-mark';
+      if (pos.left)   el.style.left   = pos.left;
+      if (pos.right)  el.style.right  = pos.right;
+      if (pos.top)    el.style.top    = pos.top;
+      if (pos.bottom) el.style.bottom = pos.bottom;
+      el.style.transform = `rotate(${pos.rot}deg)`;
+      el.innerHTML = `<svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+        <path d="${PATH}"/></svg>`;
+      document.body.appendChild(el);
+      return el;
+    }
+
+    function cycle(el) {
+      const delay   = Math.random() * 5000;
+      const visible = 900  + Math.random() * 2600;
+      const fadeOut = 400  + Math.random() * 700;
+      setTimeout(() => {
+        el.style.transition = 'opacity 0.5s ease';
+        el.style.opacity    = '0.5';
+        setTimeout(() => {
+          el.style.transition = `opacity ${fadeOut}ms ease`;
+          el.style.opacity    = '0';
+          setTimeout(() => cycle(el), fadeOut + 1200 + Math.random() * 3500);
+        }, visible);
+      }, delay);
+    }
+
+    buildPositions().forEach(pos => cycle(createMark(pos)));
+  })();
+
+
+  /* ══════════════════════════════════════
+     EMAIL
+  ══════════════════════════════════════ */
+  function handleSubmit() {
+    const input   = document.getElementById('email-input');
+    const success = document.getElementById('form-success');
+    const email   = input.value.trim();
+    if (!email || !email.includes('@')) { input.focus(); return; }
+    success.style.display = 'block';
+    input.value = '';
+  }
+  document.getElementById('email-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleSubmit();
+  });
   </script>
 </body>
 </html>
