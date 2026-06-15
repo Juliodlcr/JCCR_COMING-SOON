@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JCCR Studio — Coming Soon</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Inter:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --ink: #1a1a18;
+      --muted: #6b6b65;
+      --line: #c8c4bb;
+      --bg: #f5f2ed;
+      --accent: #9b8b78;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      overflow: hidden;
+    }
+
+    /* ── LOADER ── */
+    #loader {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.8s ease, visibility 0.8s ease;
+    }
+
+    #loader.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .loader-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+    }
+
+    /* Blueprint SVG */
+    #blueprint {
+      width: 200px;
+      height: 160px;
+    }
+
+    #blueprint path,
+    #blueprint line,
+    #blueprint rect,
+    #blueprint circle,
+    #blueprint polyline {
+      fill: none;
+      stroke: var(--ink);
+      stroke-width: 1;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Each drawn element gets animated via stroke-dasharray/dashoffset */
+    .draw {
+      stroke-dasharray: var(--len);
+      stroke-dashoffset: var(--len);
+      animation: draw-line var(--dur, 0.6s) var(--delay, 0s) cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes draw-line {
+      to { stroke-dashoffset: 0; }
+    }
+
+    .loader-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      animation: fade-in 0.6s 2.4s ease both;
+    }
+
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── MAIN PAGE ── */
+    #page {
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      padding: 48px 60px;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+
+    #page.visible {
+      opacity: 1;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(20px, 2.5vw, 28px);
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+
+    .logo span {
+      color: var(--accent);
+    }
+
+    .tagline-header {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* Center */
+    main {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      max-width: 560px;
+    }
+
+    .eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(42px, 6vw, 80px);
+      font-weight: 300;
+      line-height: 1.05;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+      margin-bottom: 28px;
+    }
+
+    h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .description {
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--muted);
+      max-width: 400px;
+      margin-bottom: 44px;
+    }
+
+    /* Email form */
+    .form-label {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--ink);
+      max-width: 380px;
+    }
+
+    .input-row input[type="email"] {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--ink);
+      padding: 10px 0;
+      letter-spacing: 0.02em;
+    }
+
+    .input-row input::placeholder {
+      color: var(--line);
+    }
+
+    .input-row button {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 10px 0 10px 16px;
+      color: var(--ink);
+      font-family: 'Inter', sans-serif;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .input-row button:hover {
+      color: var(--accent);
+    }
+
+    .form-success {
+      display: none;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-top: 14px;
+    }
+
+    /* Footer */
+    footer {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      color: var(--muted);
+    }
+
+    .footer-line {
+      width: 48px;
+      height: 1px;
+      background: var(--line);
+      margin-bottom: 6px;
+    }
+
+    .footer-note {
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .footer-contact {
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      text-align: right;
+      line-height: 1.8;
+    }
+
+    .footer-contact a {
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-contact a:hover {
+      color: var(--ink);
+    }
+
+    /* Decorative corner line */
+    .corner-mark {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      width: 180px;
+      height: 180px;
+      pointer-events: none;
+      opacity: 0.18;
+    }
+
+    .corner-mark line {
+      stroke: var(--ink);
+      stroke-width: 1;
+    }
+
+    @media (max-width: 600px) {
+      #page {
+        padding: 32px 28px 28px;
+      }
+
+      .tagline-header { display: none; }
+
+      footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      .footer-contact { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOADER -->
+  <div id="loader">
+    <div class="loader-inner">
+      <!-- Architectural floor-plan sketch -->
+      <svg id="blueprint" viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">
+        <!-- Outer perimeter -->
+        <polyline class="draw" style="--len:520px;--dur:1s;--delay:0s"
+          points="20,140 20,20 180,20 180,140 20,140" />
+        <!-- Interior wall horizontal -->
+        <line class="draw" style="--len:80px;--dur:0.5s;--delay:1s"
+          x1="20" y1="80" x2="100" y2="80" />
+        <!-- Interior wall vertical -->
+        <line class="draw" style="--len:60px;--dur:0.4s;--delay:1.5s"
+          x1="100" y1="20" x2="100" y2="80" />
+        <!-- Door arc (quarter circle) -->
+        <path class="draw" style="--len:50px;--dur:0.35s;--delay:1.9s"
+          d="M100,80 A30,30 0 0,1 130,80" />
+        <!-- Door swing line -->
+        <line class="draw" style="--len:32px;--dur:0.25s;--delay:2.25s"
+          x1="100" y1="80" x2="100" y2="50" />
+        <!-- Window tick marks top -->
+        <line class="draw" style="--len:6px;--dur:0.15s;--delay:2.5s"
+          x1="140" y1="20" x2="140" y2="14" />
+        <line class="draw" style="--len:6px;--dur:0.15s;--delay:2.6s"
+          x1="155" y1="20" x2="155" y2="14" />
+        <!-- Measurement lines -->
+        <line class="draw" style="--len:40px;--dur:0.3s;--delay:2.7s"
+          x1="20" y1="150" x2="60" y2="150" stroke-dasharray="2 4" />
+        <line class="draw" style="--len:3px;--dur:0.1s;--delay:3s"
+          x1="20" y1="147" x2="20" y2="153" />
+        <line class="draw" style="--len:3px;--dur:0.1s;--delay:3.1s"
+          x1="60" y1="147" x2="60" y2="153" />
+      </svg>
+      <span class="loader-label">Cargando</span>
+    </div>
+  </div>
+
+  <!-- MAIN PAGE -->
+  <div id="page">
+    <header>
+      <div class="logo">JCCR<span>.</span>Studio</div>
+      <div class="tagline-header">Arquitectura &amp; Diseño</div>
+    </header>
+
+    <main>
+      <p class="eyebrow">En desarrollo</p>
+      <h1>Algo nuevo<br>está <em>tomando forma.</em></h1>
+      <p class="description">
+        Estamos construyendo nuestra presencia en línea con la misma atención al detalle que ponemos en cada proyecto. Pronto podrás descubrir nuestro trabajo.
+      </p>
+
+      <label class="form-label" for="email-input">Avísame cuando esté listo</label>
+      <div class="input-row">
+        <input id="email-input" type="email" placeholder="tu@correo.com" autocomplete="email" />
+        <button type="button" onclick="handleSubmit()">Notificar →</button>
+      </div>
+      <p class="form-success" id="form-success">¡Listo! Te escribimos cuando abramos.</p>
+    </main>
+
+    <footer>
+      <div>
+        <div class="footer-line"></div>
+        <div class="footer-note">© 2025 JCCR Studio</div>
+      </div>
+      <div class="footer-contact">
+        <a href="mailto:contacto@jccr.studio">contacto@jccr.studio</a>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Decorative corner grid mark -->
+  <svg class="corner-mark" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+    <line x1="0" y1="180" x2="180" y2="0" />
+    <line x1="40" y1="180" x2="180" y2="40" />
+    <line x1="80" y1="180" x2="180" y2="80" />
+    <line x1="120" y1="180" x2="180" y2="120" />
+  </svg>
+
+  <script>
+    // After the blueprint finishes drawing, fade out the loader and show the page
+    const totalDuration = 3200; // ms — matches last animation end
+
+    setTimeout(() => {
+      const loader = document.getElementById('loader');
+      const page   = document.getElementById('page');
+      loader.classList.add('hidden');
+      page.classList.add('visible');
+    }, totalDuration);
+
+    function handleSubmit() {
+      const input   = document.getElementById('email-input');
+      const success = document.getElementById('form-success');
+      const email   = input.value.trim();
+
+      if (!email || !email.includes('@')) {
+        input.focus();
+        return;
+      }
+
+      // Here you'd wire up a real backend / service like Mailchimp, Formspree, etc.
+      success.style.display = 'block';
+      input.value = '';
+    }
+
+    // Allow Enter key in email field
+    document.getElementById('email-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleSubmit();
+    });
+  </script>
+</body>
+</html>
