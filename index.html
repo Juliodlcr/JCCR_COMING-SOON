@@ -447,13 +447,36 @@
   /* ══════════════════════════════════════
      EMAIL
   ══════════════════════════════════════ */
-  function handleSubmit() {
+  async function handleSubmit() {
     const input   = document.getElementById('email-input');
+    const btn     = document.querySelector('.input-row button');
     const success = document.getElementById('form-success');
     const email   = input.value.trim();
     if (!email || !email.includes('@')) { input.focus(); return; }
-    success.style.display = 'block';
-    input.value = '';
+
+    btn.textContent = '...';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch('https://formspree.io/f/maqzvarq', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      if (res.ok) {
+        success.style.display = 'block';
+        input.value = '';
+      } else {
+        success.textContent = 'Algo salió mal, intenta de nuevo.';
+        success.style.display = 'block';
+      }
+    } catch {
+      success.textContent = 'Sin conexión, intenta de nuevo.';
+      success.style.display = 'block';
+    } finally {
+      btn.textContent = '→';
+      btn.disabled = false;
+    }
   }
   document.getElementById('email-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') handleSubmit();
