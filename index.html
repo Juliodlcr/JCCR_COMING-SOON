@@ -6,161 +6,106 @@
   <title>JCCR Studio — Coming Soon</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Inter:wght@300;400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --ink: #1a1a18;
-      --muted: #6b6b65;
-      --line: #c8c4bb;
-      --bg: #ffffff;
-      --accent: #9b8b78;
-    }
-
     html, body {
       height: 100%;
-      background: var(--bg);
-      color: var(--ink);
+      background: #fff;
+      color: #1a1a18;
       font-family: 'Inter', sans-serif;
       font-weight: 300;
-      overflow: hidden;
     }
 
-    /* ── LOADER ── */
-    #loader {
-      position: fixed;
-      inset: 0;
-      background: var(--bg);
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: opacity 0.9s ease, visibility 0.9s ease;
-    }
-    #loader.hidden { opacity: 0; visibility: hidden; }
-
-    .loader-inner {
+    /* ── LAYOUT ── */
+    .page {
+      min-height: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 24px;
+      justify-content: center;
+      padding: 48px 24px 64px;
+      gap: 0;
     }
 
-    /* Logo SVG */
-    #logo-svg {
-      width: 190px;
-      height: 190px;
+    /* ── LOGO SVG ── */
+    .logo-wrap {
+      width: 220px;
+      height: 220px;
+      margin-bottom: 36px;
     }
 
-    /* Letras: se revelan con clipPath + animate SMIL */
-    #logo-svg text {
-      font-family: 'Helvetica Neue', 'Helvetica', Arial, sans-serif;
+    .logo-wrap svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .logo-wrap text {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
       font-weight: 400;
       font-size: 82px;
-      fill: var(--ink);
+      fill: #1a1a18;
     }
 
-    /* Slash diagonal: stroke animation */
-    #logo-svg .slash {
-      fill: none;
-      stroke: var(--ink);
+    .logo-wrap line {
+      stroke: #1a1a18;
       stroke-width: 5.5;
       stroke-linecap: round;
-      stroke-dasharray: 72;
-      stroke-dashoffset: 72;
-      animation: draw-slash 0.3s 1.0s cubic-bezier(0.4,0,0.2,1) forwards;
-    }
-    @keyframes draw-slash {
-      to { stroke-dashoffset: 0; }
     }
 
-    .loader-label {
+    /* ── LOADING BAR ── */
+    .bar-wrap {
+      width: 220px;
+      height: 1.5px;
+      background: #e8e5e0;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 56px;
+    }
+
+    .bar-fill {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        #1a1a18 40%,
+        #1a1a18 60%,
+        transparent 100%
+      );
+      animation: sweep 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+
+    @keyframes sweep {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(200%); }
+    }
+
+    /* ── EMAIL SECTION ── */
+    .email-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      text-align: center;
+    }
+
+    .email-label {
       font-size: 10px;
       letter-spacing: 0.28em;
       text-transform: uppercase;
-      color: var(--muted);
-      animation: fade-in 0.5s 2.6s ease both;
-    }
-    @keyframes fade-in {
-      from { opacity: 0; transform: translateY(4px); }
-      to   { opacity: 1; transform: translateY(0); }
+      color: #9b8b78;
     }
 
-    /* ── MAIN PAGE ── */
-    #page {
-      height: 100%;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      padding: 48px 60px;
-      opacity: 0;
-      transition: opacity 1s ease;
-    }
-    #page.visible { opacity: 1; }
-
-    header {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-    }
-    .logo {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(20px, 2.5vw, 28px);
-      font-weight: 400;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-    .logo span { color: var(--accent); }
-    .tagline-header {
-      font-size: 10px;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    main {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      max-width: 560px;
-    }
-    .eyebrow {
-      font-size: 10px;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 24px;
-    }
-    h1 {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(42px, 6vw, 80px);
-      font-weight: 300;
-      line-height: 1.05;
-      letter-spacing: -0.01em;
-      margin-bottom: 28px;
-    }
-    h1 em { font-style: italic; color: var(--accent); }
-    .description {
-      font-size: 14px;
-      line-height: 1.8;
-      color: var(--muted);
-      max-width: 400px;
-      margin-bottom: 44px;
-    }
-
-    .form-label {
-      font-size: 10px;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 12px;
-      display: block;
-    }
     .input-row {
       display: flex;
-      border-bottom: 1px solid var(--ink);
-      max-width: 380px;
+      align-items: center;
+      border-bottom: 1px solid #1a1a18;
+      width: 280px;
+      max-width: 100%;
     }
+
     .input-row input[type="email"] {
       flex: 1;
       background: transparent;
@@ -169,205 +114,73 @@
       font-family: 'Inter', sans-serif;
       font-size: 13px;
       font-weight: 300;
-      color: var(--ink);
+      color: #1a1a18;
       padding: 10px 0;
+      text-align: center;
     }
-    .input-row input::placeholder { color: var(--line); }
+
+    .input-row input::placeholder {
+      color: #c8c4bb;
+    }
+
     .input-row button {
       background: transparent;
       border: none;
       cursor: pointer;
-      padding: 10px 0 10px 16px;
-      color: var(--ink);
+      padding: 10px 0 10px 12px;
+      color: #6b6b65;
       font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      line-height: 1;
+      transition: color 0.2s, transform 0.2s;
+    }
+
+    .input-row button:hover {
+      color: #1a1a18;
+      transform: translateX(2px);
+    }
+
+    .form-success {
+      display: none;
       font-size: 10px;
       letter-spacing: 0.2em;
       text-transform: uppercase;
-      transition: color 0.2s;
-    }
-    .input-row button:hover { color: var(--accent); }
-    .form-success {
-      display: none;
-      font-size: 11px;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-top: 14px;
-    }
-
-    footer {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      color: var(--muted);
-    }
-    .footer-line { width: 48px; height: 1px; background: var(--line); margin-bottom: 6px; }
-    .footer-note { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; }
-    .footer-contact { font-size: 11px; text-align: right; line-height: 1.8; }
-    .footer-contact a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
-    .footer-contact a:hover { color: var(--ink); }
-
-    .corner-mark {
-      position: fixed;
-      bottom: 0; right: 0;
-      width: 180px; height: 180px;
-      pointer-events: none;
-      opacity: 0.07;
-    }
-    .corner-mark line { stroke: var(--ink); stroke-width: 1; }
-
-    @media (max-width: 600px) {
-      #page { padding: 32px 28px 28px; }
-      .tagline-header { display: none; }
-      footer { flex-direction: column; align-items: flex-start; gap: 16px; }
-      .footer-contact { text-align: left; }
+      color: #9b8b78;
     }
   </style>
 </head>
 <body>
+  <div class="page">
 
-  <!-- LOADER -->
-  <div id="loader">
-    <div class="loader-inner">
-
-      <!--
-        Logo SVG en Helvetica Neue real.
-        Cada letra se revela con un clipPath cuyo rect crece de izquierda a derecha.
-        La diagonal "/" se dibuja con stroke-dashoffset.
-
-        Layout (viewBox 0 0 200 200):
-          J   → cuadrante superior izquierdo  (x=8,  y=92)
-          C   → cuadrante superior derecho    (x=104, y=92)
-          /   → línea diagonal central
-          C   → cuadrante inferior izquierdo  (x=8,  y=186)
-          R   → cuadrante inferior derecho    (x=104, y=186)
-
-        Timing:
-          J         begin=0.05s  dur=0.40s
-          C-top     begin=0.55s  dur=0.45s
-          /         begin=1.00s  dur=0.30s  (CSS)
-          C-bottom  begin=1.30s  dur=0.45s
-          R         begin=1.75s  dur=0.45s
-          label     fade 2.30s
-          page      visible 2.70s
-      -->
-      <svg id="logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-
-          <!-- Clip J: rect crece en ancho, cubre cuadrante sup-izq -->
-          <clipPath id="clip-j">
-            <rect x="0" y="0" height="98" width="0">
-              <animate attributeName="width"
-                from="0" to="96"
-                begin="0.05s" dur="0.40s"
-                calcMode="spline" keySplines="0.4 0 0.2 1" keyTimes="0;1"
-                fill="freeze"/>
-            </rect>
-          </clipPath>
-
-          <!-- Clip C superior: rect crece en ancho, cuadrante sup-der -->
-          <clipPath id="clip-c1">
-            <rect x="100" y="0" height="98" width="0">
-              <animate attributeName="width"
-                from="0" to="98"
-                begin="0.55s" dur="0.45s"
-                calcMode="spline" keySplines="0.4 0 0.2 1" keyTimes="0;1"
-                fill="freeze"/>
-            </rect>
-          </clipPath>
-
-          <!-- Clip C inferior: rect crece en ancho, cuadrante inf-izq -->
-          <clipPath id="clip-c2">
-            <rect x="0" y="98" height="105" width="0">
-              <animate attributeName="width"
-                from="0" to="96"
-                begin="1.30s" dur="0.45s"
-                calcMode="spline" keySplines="0.4 0 0.2 1" keyTimes="0;1"
-                fill="freeze"/>
-            </rect>
-          </clipPath>
-
-          <!-- Clip R: rect crece en ancho, cuadrante inf-der -->
-          <clipPath id="clip-r">
-            <rect x="100" y="98" height="105" width="0">
-              <animate attributeName="width"
-                from="0" to="98"
-                begin="1.75s" dur="0.45s"
-                calcMode="spline" keySplines="0.4 0 0.2 1" keyTimes="0;1"
-                fill="freeze"/>
-            </rect>
-          </clipPath>
-
-        </defs>
-
-        <!-- J -->
-        <text clip-path="url(#clip-j)" x="8" y="92">J</text>
-
-        <!-- C superior -->
-        <text clip-path="url(#clip-c1)" x="104" y="92">C</text>
-
-        <!-- / diagonal — stroke animation via CSS -->
-        <line class="slash" x1="115" y1="133" x2="88" y2="70" />
-
-        <!-- C inferior -->
-        <text clip-path="url(#clip-c2)" x="8" y="186">C</text>
-
-        <!-- R -->
-        <text clip-path="url(#clip-r)" x="104" y="186">R</text>
-
+    <!-- LOGO -->
+    <div class="logo-wrap">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <text x="8"   y="92">J</text>
+        <text x="108" y="92">C</text>
+        <line x1="115" y1="133" x2="88" y2="70" />
+        <text x="8"   y="186">C</text>
+        <text x="108" y="186">R</text>
       </svg>
-
-      <span class="loader-label">JCCR Studio</span>
     </div>
-  </div>
 
-  <!-- MAIN PAGE -->
-  <div id="page">
-    <header>
-      <div class="logo">JCCR<span>.</span>Studio</div>
-      <div class="tagline-header">Arquitectura &amp; Diseño</div>
-    </header>
+    <!-- BARRA DE CARGA -->
+    <div class="bar-wrap">
+      <div class="bar-fill"></div>
+    </div>
 
-    <main>
-      <p class="eyebrow">En desarrollo</p>
-      <h1>Algo nuevo<br>está <em>tomando forma.</em></h1>
-      <p class="description">
-        Estamos construyendo nuestra presencia en línea con la misma atención al detalle que ponemos en cada proyecto. Pronto podrás descubrir nuestro trabajo.
-      </p>
-
-      <label class="form-label" for="email-input">Avísame cuando esté listo</label>
+    <!-- EMAIL -->
+    <div class="email-section">
+      <p class="email-label">Avísame cuando estemos listos</p>
       <div class="input-row">
         <input id="email-input" type="email" placeholder="tu@correo.com" autocomplete="email" />
-        <button type="button" onclick="handleSubmit()">Notificar →</button>
+        <button type="button" onclick="handleSubmit()" aria-label="Enviar">→</button>
       </div>
-      <p class="form-success" id="form-success">¡Listo! Te escribimos cuando abramos.</p>
-    </main>
+      <p class="form-success" id="form-success">¡Listo! Te avisamos pronto.</p>
+    </div>
 
-    <footer>
-      <div>
-        <div class="footer-line"></div>
-        <div class="footer-note">© 2025 JCCR Studio</div>
-      </div>
-      <div class="footer-contact">
-        <a href="mailto:contacto@jccr.studio">contacto@jccr.studio</a>
-      </div>
-    </footer>
   </div>
 
-  <svg class="corner-mark" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
-    <line x1="0" y1="180" x2="180" y2="0" />
-    <line x1="40" y1="180" x2="180" y2="40" />
-    <line x1="80" y1="180" x2="180" y2="80" />
-    <line x1="120" y1="180" x2="180" y2="120" />
-  </svg>
-
   <script>
-    // La última animación termina ≈ 2.20s + margen
-    setTimeout(() => {
-      document.getElementById('loader').classList.add('hidden');
-      document.getElementById('page').classList.add('visible');
-    }, 2900);
-
     function handleSubmit() {
       const input   = document.getElementById('email-input');
       const success = document.getElementById('form-success');
@@ -376,8 +189,7 @@
       success.style.display = 'block';
       input.value = '';
     }
-
-    document.getElementById('email-input').addEventListener('keydown', (e) => {
+    document.getElementById('email-input').addEventListener('keydown', e => {
       if (e.key === 'Enter') handleSubmit();
     });
   </script>
