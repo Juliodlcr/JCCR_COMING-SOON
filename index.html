@@ -48,25 +48,61 @@
       object-fit: contain;
     }
 
-    .bar-wrap {
-      width: 200px;
-      height: 1.5px;
-      background: #e8e5e0;
-      position: relative;
-      overflow: hidden;
+    /* ── BARRA DE CARGA ── */
+    .bar-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
       margin-bottom: 52px;
     }
 
-    .bar-fill {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(90deg, transparent 0%, #1a1a18 40%, #1a1a18 60%, transparent 100%);
-      animation: sweep 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    .bar-label {
+      font-size: 9px;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: #b0aca5;
     }
 
-    @keyframes sweep {
-      0%   { transform: translateX(-100%); }
-      100% { transform: translateX(200%); }
+    .bar-wrap {
+      width: 200px;
+      height: 1px;
+      background: #e8e5e0;
+      position: relative;
+    }
+
+    /* Cursor que viaja de izquierda a derecha */
+    .bar-cursor {
+      position: absolute;
+      top: -3px;
+      width: 1px;
+      height: 7px;
+      background: #1a1a18;
+      animation: cursor-travel 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    /* Segmento que lo sigue con fade */
+    .bar-trail {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 1px;
+      width: 0;
+      background: linear-gradient(90deg, transparent, #1a1a18 80%);
+      animation: trail-travel 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes cursor-travel {
+      0%   { left: 0%;    opacity: 0; }
+      5%   { opacity: 1; }
+      95%  { opacity: 1; }
+      100% { left: 100%; opacity: 0; }
+    }
+
+    @keyframes trail-travel {
+      0%   { left: 0; width: 0; opacity: 0; }
+      5%   { opacity: 1; }
+      100% { left: 0; width: 100%; opacity: 0; }
     }
 
     .email-section {
@@ -155,8 +191,12 @@
       <img src="Logo_JCCR (1).jpg" alt="JCCR Studio" />
     </div>
 
-    <div class="bar-wrap">
-      <div class="bar-fill"></div>
+    <div class="bar-block">
+      <span class="bar-label">In development</span>
+      <div class="bar-wrap">
+        <div class="bar-trail"></div>
+        <div class="bar-cursor"></div>
+      </div>
     </div>
 
     <div class="email-section">
