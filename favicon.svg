@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="50" fill="#1a1a18"/>
+  <text
+    x="50" y="56"
+    font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+    font-size="28"
+    font-weight="400"
+    fill="#ffffff"
+    text-anchor="middle"
+    letter-spacing="2">JCCR</text>
+</svg>
