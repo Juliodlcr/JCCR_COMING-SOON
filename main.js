@@ -2,16 +2,14 @@
    INTRO — "ESTUDIO JCCR" letra por letra
 ══════════════════════════════════════════════════ */
 (function () {
-  const text      = 'ESTUDIO JCCR';
-  const el        = document.getElementById('intro-text');
-  const intro     = document.getElementById('intro');
-  const introLogo = document.getElementById('intro-logo');
+  const text    = 'ESTUDIO JCCR';
+  const el      = document.getElementById('intro-text');
+  const intro   = document.getElementById('intro');
+  const contact = document.querySelector('.contact-section');
 
-  const DELAY     = 280;
-  const HOLD      = 900;
-  const LOGO_IN   = 900;
-  const LOGO_HOLD = 1200;
-  const FADEOUT   = 800;
+  const DELAY   = 280;
+  const HOLD    = 900;
+  const FADEOUT = 800;
 
   const chars = [];
   for (const ch of text) {
@@ -38,17 +36,12 @@
   const textDone = chars.length * DELAY + HOLD;
 
   setTimeout(() => {
-    el.style.transition = 'opacity 0.7s ease';
-    el.style.opacity = '0';
-    setTimeout(() => {
-      introLogo.style.opacity = '1';
-    }, 400);
-  }, textDone);
-
-  setTimeout(() => {
     intro.classList.add('fade-out');
-    setTimeout(() => intro.remove(), FADEOUT);
-  }, textDone + LOGO_IN + LOGO_HOLD);
+    setTimeout(() => {
+      intro.remove();
+      contact.style.opacity = '1';
+    }, FADEOUT);
+  }, textDone);
 })();
 
 
