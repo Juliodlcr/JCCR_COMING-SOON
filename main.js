@@ -26,11 +26,25 @@
     }
   }
 
+  const GLITCH_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#@!%&';
+
+  function glitch(span, finalChar) {
+    span.style.opacity = '1';
+    let ticks = 0;
+    const total = 8;
+    const iv = setInterval(() => {
+      span.textContent = GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)];
+      ticks++;
+      if (ticks >= total) {
+        clearInterval(iv);
+        span.textContent = finalChar;
+      }
+    }, 40);
+  }
+
   chars.forEach((span, i) => {
-    setTimeout(() => {
-      span.style.opacity = '1';
-      span.style.transform = 'translateY(0)';
-    }, i * DELAY);
+    const finalChar = span.textContent;
+    setTimeout(() => glitch(span, finalChar), i * DELAY);
   });
 
   const textDone = chars.length * DELAY + HOLD;

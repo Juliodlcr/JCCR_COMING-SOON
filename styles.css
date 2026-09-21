@@ -95,8 +95,6 @@ html, body {
 #intro-text .char {
   display: inline-block;
   opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
 #intro-text .space {
