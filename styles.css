@@ -1,0 +1,229 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: #fff;
+  color: #1a1a18;
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+}
+
+/* ── CANVAS ── */
+#bg-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── LAYOUT ── */
+.page {
+  position: relative;
+  z-index: 1;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px 64px;
+}
+
+/* ── LOGO ── */
+.logo-wrap {
+  width: 200px;
+  height: 200px;
+  margin-bottom: 36px;
+}
+
+.logo-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ── BARRA DE CARGA ── */
+.bar-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 52px;
+}
+
+.bar-label {
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: #b0aca5;
+}
+
+.bar-wrap {
+  width: 200px;
+  height: 1px;
+  background: #e8e5e0;
+  position: relative;
+}
+
+.bar-cursor {
+  position: absolute;
+  top: -3px;
+  width: 1px;
+  height: 7px;
+  background: #1a1a18;
+  animation: cursor-travel 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.bar-trail {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 1px;
+  width: 0;
+  background: linear-gradient(90deg, transparent, #1a1a18 80%);
+  animation: trail-travel 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes cursor-travel {
+  0%   { left: 0%;    opacity: 0; }
+  5%   { opacity: 1; }
+  95%  { opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
+
+@keyframes trail-travel {
+  0%   { left: 0; width: 0; opacity: 0; }
+  5%   { opacity: 1; }
+  100% { left: 0; width: 100%; opacity: 0; }
+}
+
+/* ── EMAIL ── */
+.email-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.email-label {
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #9b8b78;
+}
+
+.input-row {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #1a1a18;
+  width: 280px;
+  max-width: 100%;
+}
+
+.input-row input[type="email"] {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  color: #1a1a18;
+  padding: 10px 0;
+  text-align: center;
+}
+
+.input-row input::placeholder { color: #c8c4bb; }
+
+.input-row button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 10px 0 10px 12px;
+  color: #6b6b65;
+  font-size: 16px;
+  line-height: 1;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.input-row button:hover { color: #1a1a18; transform: translateX(2px); }
+
+.form-success {
+  display: none;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #9b8b78;
+}
+
+/* ── INTRO ── */
+#intro {
+  position: fixed;
+  inset: 0;
+  background: #fff;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.8s ease;
+}
+
+#intro.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#intro-text {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: clamp(22px, 4vw, 42px);
+  font-weight: 300;
+  letter-spacing: 0.55em;
+  text-transform: uppercase;
+  color: #1a1a18;
+}
+
+#intro-text .char {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+#intro-text .space {
+  display: inline-block;
+  width: 0.5em;
+}
+
+#intro-logo {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+
+#intro-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ── CORNER MARKS ── */
+.corner-mark {
+  position: fixed;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 2;
+}
+
+.corner-mark svg { width: 100%; height: 100%; }
+
+.corner-mark path {
+  fill: none;
+  stroke: #1a1a18;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
