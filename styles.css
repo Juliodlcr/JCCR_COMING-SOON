@@ -8,31 +8,22 @@ html, body {
   font-weight: 300;
 }
 
-/* ── CANVAS ── */
-#bg-canvas {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-}
-
 /* ── LAYOUT ── */
 .page {
-  position: relative;
-  z-index: 1;
   min-height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 48px 24px 64px;
+  gap: 0;
 }
 
 /* ── LOGO ── */
 .logo-wrap {
   width: 200px;
   height: 200px;
-  margin-bottom: 36px;
+  margin-bottom: 40px;
 }
 
 .logo-wrap img {
@@ -41,63 +32,8 @@ html, body {
   object-fit: contain;
 }
 
-/* ── BARRA DE CARGA ── */
-.bar-block {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 52px;
-}
-
-.bar-label {
-  font-size: 9px;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  color: #b0aca5;
-}
-
-.bar-wrap {
-  width: 200px;
-  height: 1px;
-  background: #e8e5e0;
-  position: relative;
-}
-
-.bar-cursor {
-  position: absolute;
-  top: -3px;
-  width: 1px;
-  height: 7px;
-  background: #1a1a18;
-  animation: cursor-travel 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-.bar-trail {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 1px;
-  width: 0;
-  background: linear-gradient(90deg, transparent, #1a1a18 80%);
-  animation: trail-travel 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes cursor-travel {
-  0%   { left: 0%;    opacity: 0; }
-  5%   { opacity: 1; }
-  95%  { opacity: 1; }
-  100% { left: 100%; opacity: 0; }
-}
-
-@keyframes trail-travel {
-  0%   { left: 0; width: 0; opacity: 0; }
-  5%   { opacity: 1; }
-  100% { left: 0; width: 100%; opacity: 0; }
-}
-
-/* ── EMAIL ── */
-.email-section {
+/* ── CONTACTO ── */
+.contact-section {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -105,9 +41,9 @@ html, body {
   text-align: center;
 }
 
-.email-label {
+.contact-label {
   font-size: 10px;
-  letter-spacing: 0.28em;
+  letter-spacing: 0.32em;
   text-transform: uppercase;
   color: #9b8b78;
 }
