@@ -95,7 +95,7 @@ html, body {
 #intro-text .char {
   display: inline-block;
   opacity: 0;
-  width: 1ch;
+  min-width: 1ch;
   text-align: center;
 }
 
