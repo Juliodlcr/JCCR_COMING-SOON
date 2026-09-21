@@ -157,6 +157,44 @@
 
     .input-row button:hover { color: #1a1a18; transform: translateX(2px); }
 
+    /* ── INTRO ── */
+    #intro {
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.8s ease;
+    }
+
+    #intro.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #intro-text {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: clamp(22px, 4vw, 42px);
+      font-weight: 300;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #1a1a18;
+    }
+
+    #intro-text .char {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    #intro-text .space {
+      display: inline-block;
+      width: 0.5em;
+    }
+
     .form-success {
       display: none;
       font-size: 10px;
@@ -185,6 +223,11 @@
 </head>
 <body>
 
+  <!-- INTRO -->
+  <div id="intro">
+    <div id="intro-text"></div>
+  </div>
+
   <canvas id="bg-canvas"></canvas>
 
   <div class="page">
@@ -211,6 +254,49 @@
   </div>
 
   <script>
+  /* ══════════════════════════════════════════════════
+     INTRO — "ESTUDIO JCCR" letra por letra
+  ══════════════════════════════════════════════════ */
+  (function () {
+    const text    = 'ESTUDIO JCCR';
+    const el      = document.getElementById('intro-text');
+    const intro   = document.getElementById('intro');
+    const DELAY   = 80;   // ms entre letras
+    const HOLD    = 900;  // ms de pausa tras completar
+    const FADEOUT = 800;  // ms del fade de salida (debe coincidir con CSS)
+
+    // Construir spans por letra
+    const chars = [];
+    for (const ch of text) {
+      if (ch === ' ') {
+        const sp = document.createElement('span');
+        sp.className = 'space';
+        el.appendChild(sp);
+      } else {
+        const span = document.createElement('span');
+        span.className = 'char';
+        span.textContent = ch;
+        el.appendChild(span);
+        chars.push(span);
+      }
+    }
+
+    // Aparecen letra por letra
+    chars.forEach((span, i) => {
+      setTimeout(() => {
+        span.style.opacity = '1';
+        span.style.transform = 'translateY(0)';
+      }, i * DELAY);
+    });
+
+    // Tras completar, espera y hace fade out
+    const totalTime = chars.length * DELAY + HOLD;
+    setTimeout(() => {
+      intro.classList.add('fade-out');
+      setTimeout(() => intro.remove(), FADEOUT);
+    }, totalTime);
+  })();
+
   /* ══════════════════════════════════════════════════
      CANVAS — Puntos y malla en toda la pantalla
      Ciclo de 18s:
